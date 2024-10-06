@@ -1,18 +1,55 @@
 #!/usr/bin/python3
-from sys import argv
+from math import gcd, sqrt
+import sys
 
-with open(argv[1]) as f:
-    for line in f:
+def checkfirst50(num):
+    first50 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59,
+               61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127,
+               131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193,
+               197, 199, 211, 223, 227, 229]
+    for prime in first50:
+        if (num % prime) == 0:
+            return prime
+    return 0
+
+def singlerun(g, num):
+    tor = 2
+    har = 2
+
+    while True:
+        tor = g(tor)
+        har = g(g(har))
+        d = gcd(tor - har, num)
+
+        if d == num:
+            return False
+        elif d > 1:
+            return d
+
+def pollardRho(num):
+    d = checkfirst50(num)
+    if (d != 0):
+        return d
+    c = 1
+    while True:
+        def g(x):
+            return ((x**2 + c) % num)
+        d = singlerun(g, num)
+        if d:
+            return d
+        c += 1
+
+def main():
+    if len(sys.argv) != 2:
+        exit()
+    filename = sys.argv[1]
+    file = open(filename, "r")
+    while True:
+        line = file.readline()
+        if not line:
+            break
         num = int(line)
-        print("{:d}=".format(num), end="")
-        if num % 2 == 0:
-            print("{}*2".format(num//2))
-            continue
-        for i in range(3, num, 2):
-            if num % i == 0:
-                factor = num//i
-                for j in range(3, factor, 2):
-                    if factor % j == 0 or i % j == 0:
-                        break
-                print("{}*{}".format(factor, i))
-                break
+        factor1 = pollardRho(num)
+        factor2 = num // factor1
+        print("{}={}*{}".format(num, factor2, factor1))
+main()
